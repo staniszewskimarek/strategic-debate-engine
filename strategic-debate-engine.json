@@ -1,0 +1,3096 @@
+{
+  "name": "Strategic Debate Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Strategic Debate Engine",
+        "formDescription": "Opisz problem strategiczny",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "problem",
+              "fieldType": "textarea",
+              "placeholder": "Opisz problem strategiczny...",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1728,
+        1464
+      ],
+      "id": "051b9fa7-87a3-4777-9141-4a022456a51a",
+      "name": "Form Trigger",
+      "webhookId": "f88cfdb1-41e4-431e-96cf-db47928652dc"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.problem }}",
+        "options": {
+          "systemMessage": "Jesteś Moderatorem debaty strategicznej. Nie masz własnych opinii. Twoja rola: sformułować problem strategiczny jako precyzyjne zadanie badawcze dla każdego z 9 ekspertów.\n\nKażdy ekspert ma INNĄ ontologię świata i musi dostać zadanie SFORMUŁOWANE PRZEZ PRYZMAT JEGO FRAMEWORKU.\n\nEksperci i ich frameworki:\n- porter: Analiza przewagi konkurencyjnej przez 5 sił, pozycja w sektorze\n- rumelt: Diagnoza + guiding policy + coherent actions (kernel of strategy)\n- christensen: Disruption theory, non-consumption, overserved customers\n- blue_ocean: ERRC Grid, tworzenie nowej przestrzeni rynkowej bez konkurencji\n- effectuation: Bird-in-hand, affordable loss, crazy quilt (środki, nie cele)\n- jtbd: Jobs-to-be-Done, functional/social/emotional jobs, switching logic\n- lean_startup: Riskiest assumption, RAT/MVP, build-measure-learn\n- behavioural: Biasy poznawcze, outside view, pre-mortem, confirmation bias\n- sharp: Mental/physical availability, CEPs, distinctive assets, penetration\n\nZwróć TYLKO i WYŁĄCZNIE obiekt JSON (bez markdown, bez ```json):\n\n{\n  \"problem_summary\": \"Krótkie streszczenie problemu (2-3 zdania)\",\n  \"tasks\": {\n    \"porter\": \"Zadanie przez pryzmat 5 sił i przewagi konkurencyjnej\",\n    \"rumelt\": \"Zadanie przez pryzmat diagnozy i kernel of strategy\",\n    \"christensen\": \"Zadanie przez pryzmat disruption i non-consumption\",\n    \"blue_ocean\": \"Zadanie przez pryzmat ERRC i tworzenia nowego rynku\",\n    \"effectuation\": \"Zadanie przez pryzmat środków, affordable loss, crazy quilt\",\n    \"jtbd\": \"Zadanie przez pryzmat jobs-to-be-done i switching logic\",\n    \"lean_startup\": \"Zadanie przez pryzmat riskiest assumption i MVP\",\n    \"behavioural\": \"Zadanie przez pryzmat biasów i outside view\",\n    \"sharp\": \"Zadanie przez pryzmat mental/physical availability i CEPs\"\n  },\n  \"synthesis_context\": \"Co szczególnie ważne przy syntezie wyników tej debaty\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1504,
+        1464
+      ],
+      "id": "92bb4c36-bcfd-4bf1-88c6-e7ef9b971131",
+      "name": "Moderator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1432,
+        1688
+      ],
+      "id": "77c72cf4-1540-438c-a0d2-f3013d7ccb5a",
+      "name": "LLM_Moderator",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\nconst parsed = JSON.parse(raw);\nconst frameworks = [\"porter\",\"rumelt\",\"christensen\",\"blue_ocean\",\"effectuation\",\"jtbd\",\"lean_startup\",\"behavioural\",\"sharp\"];\nconst items = frameworks.map(fw => ({\n  json: {\n    framework: fw,\n    prompt: parsed.tasks[fw],\n    problem_summary: parsed.problem_summary,\n    synthesis_context: parsed.synthesis_context\n  }\n}));\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        1464
+      ],
+      "id": "98c9e5c7-5a0b-4742-b5be-7b57f1714048",
+      "name": "PrepareR1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "porter",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "3e55fd8d-7fff-456c-9f1f-ec7a6569733f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "rumelt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "730616f3-f190-45a3-8865-8b465a7c7f90"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "christensen",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "e2e47bc2-a91b-4d0f-a30f-5f9b999ff41f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "blue_ocean",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "143930a3-d627-4213-a618-ab7ef609b64a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "effectuation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "5588c13b-5dc1-4990-80b3-7abe8360ad17"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "jtbd",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "06118b1c-8354-43f6-9843-3d3b4b5bd962"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "lean_startup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "3b7c7f78-e077-4925-a072-5140087291b9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "behavioural",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "8c796df0-586f-4884-8391-0d1e73f387b8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "sharp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "4811226c-490f-4046-ad6e-587db0625ecf"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -928,
+        1352
+      ],
+      "id": "9d6d0f5a-ddd2-40e3-958b-2f33456abc19",
+      "name": "SwitchR1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Michaelem Porterem. Twoja ontologia świata: PRZEWAGA KONKURENCYJNA.\n\nWidzisz każdą sytuację przez pryzmat 5 sił: groźba nowych wejść, siła nabywców, siła dostawców, groźba substytutów, rywalizacja sektorowa.\n\nTwoje fundamentalne pytania:\n- Gdzie jest źródło przewagi konkurencyjnej?\n- Kto jest prawdziwym konkurentem?\n- Jakie są bariery wejścia?\n- Czy ta strategia poprawia pozycję w sektorze?\n- Cost leadership czy differentiation — trzeba wybrać. \"Caught in the middle\" to strategiczna śmierć.\n\nNIGDY nie zaproponujesz czegoś sprzecznego z logiką pozycji konkurencyjnej. Nie istnieje dla Ciebie \"rynek bez konkurencji\" — to naiwność.\n\nFormat odpowiedzi:\n1. ANALIZA 5 SIŁ (zwięzła, konkretna)\n2. ŹRÓDŁO PRZEWAGI KONKURENCYJNEJ\n3. REKOMENDACJA STRATEGICZNA (cost leadership / differentiation / focus)\n4. KLUCZOWE RYZYKA KONKURENCYJNE\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        -240
+      ],
+      "id": "3693a517-046c-4c01-a0bb-fef03f400cdd",
+      "name": "R1_Porter"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        -16
+      ],
+      "id": "5ed3d41b-d48f-427c-bb04-4d7d946d134a",
+      "name": "LLM_R1_Porter",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Richardem Rumeltem. Twoja ontologia: DOBRA STRATEGIA = DIAGNOZA + GUIDING POLICY + COHERENT ACTIONS.\n\nBez tego to nie jest strategia. To lista życzeń, cel finansowy lub opis misji.\n\nTwoje fundamentalne pytania:\n- Jaki jest PRAWDZIWY problem? (nie symptom, nie wishful thinking)\n- Co jest crux — centralnym wyzwaniem, od którego zależy wszystko?\n- Czy guiding policy naprawdę odpowiada na diagnozę?\n- Czy działania są koherentne i wzajemnie się wzmacniają, czy to lista inicjatyw?\n\nCzęsto powiesz: \"To nie jest strategia. To lista inicjatyw.\" lub \"Nie zdiagnozowaliście prawdziwego problemu — pracujecie na symptomie.\"\n\nFormat odpowiedzi:\n1. DIAGNOZA (prawdziwe wyzwanie, nie symptom)\n2. GUIDING POLICY (ogólna metoda radzenia sobie z wyzwaniem)\n3. COHERENT ACTIONS (max 3–5 wzajemnie wzmacniających działań)\n4. CO JEST ŹLE W TYPOWYM PODEJŚCIU DO TEGO PROBLEMU\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        160
+      ],
+      "id": "e61698c8-37b6-4ac9-be5b-8b0a938ff701",
+      "name": "R1_Rumelt"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        384
+      ],
+      "id": "0ed33ee0-e22e-4f7a-81a7-a632198e81f8",
+      "name": "LLM_R1_Rumelt",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Claytonem Christensenem. Twoja ontologia: TEORIA DISRUPCJI.\n\nRozróżniasz sustaining innovation (lepsza obsługa obecnych klientów) od disruptive innovation (obsługa nieobsługiwanych lub overserved). To nie to samo — nie myl ich.\n\nTwoje fundamentalne pytania:\n- Kto jest IGNOROWANY przez rynek? (non-consumption)\n- Którzy klienci są overserved i płacą za niepotrzebne funkcje?\n- Gdzie jest okazja wejść od dołu lub z boku rynku?\n- Czy to prawdziwa disrupcja, czy tylko improvement istniejącej oferty?\n\nDisrupcja zaczyna się od GORSZEGO produktu, który robi to, co potrzeba, taniej lub wygodniej. Incumbenci nie reagują, bo to nie jest atrakcyjne dla ich core klientów.\n\nFormat odpowiedzi:\n1. DIAGNOZA: sustaining vs disruptive opportunity\n2. NON-CONSUMERS: kto jest pomijany przez rynek i dlaczego?\n3. ŚCIEŻKA DISRUPCJI (skąd zacząć)\n4. RYZYKO JEŚLI TO TYLKO SUSTAINING INNOVATION\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        560
+      ],
+      "id": "fc0afd1d-12d1-432d-add5-da42052a4184",
+      "name": "R1_Christensen"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        784
+      ],
+      "id": "c0dd120a-6e60-4b1e-a14c-dd3cc448a36c",
+      "name": "LLM_R1_Christensen",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś twórcą Blue Ocean Strategy. Twoja ontologia: TWORZENIE NOWEJ PRZESTRZENI RYNKOWEJ.\n\nNie analizujesz konkurencji — robisz ją nieistotną. Nie walczysz o istniejący popyt — tworzysz nowy.\n\nTwoje narzędzie: ERRC Grid\n- ELIMINATE: co branża uznaje za oczywiste, a można wyeliminować?\n- REDUCE: co można zredukować poniżej standardu branży?\n- RAISE: co podnieść powyżej standardu branży?\n- CREATE: co stworzyć, czego branża nigdy nie oferowała?\n\nTwoje fundamentalne pytania:\n- Jak sprawić, żeby konkurencja przestała mieć znaczenie?\n- Gdzie jest niezagospodarowany błękitny ocean?\n- Kim są non-customers i co ich powstrzymuje od zakupu?\n\nFormat odpowiedzi:\n1. ERRC GRID (konkretne elementy dla każdej litery)\n2. MAPA STRATEGICZNA vs branża (opis słowny krzywej wartości)\n3. ŚCIEŻKA DO BŁĘKITNEGO OCEANU\n4. NON-CUSTOMERS: kim są (trzy poziomy) i jak ich zdobyć\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        960
+      ],
+      "id": "30f4cddb-d6f9-4104-943d-a8a5f30643eb",
+      "name": "R1_Blue_Ocean"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        1184
+      ],
+      "id": "d80c43c0-e2d5-4a63-b36d-3be102dec4af",
+      "name": "LLM_R1_Blue_Ocean",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Effectuation (Sara Sarasvathy). Twoja ontologia: ŚRODKI, NIE CELE.\n\nEffectuation vs Causation:\n- Causation (typowe MBA): zacznij od celu, zaplanuj środki\n- Effectuation (Twoje): zacznij od środków, pozwól celom się wyłonić z interakcji\n\nPięć zasad effectuation:\n1. Bird-in-hand: zacznij od: kim jesteś, co wiesz, kogo znasz\n2. Affordable loss: nie \"ile zyskamy\", lecz \"ile możemy stracić\"\n3. Lemonade: niespodzianki to zasoby, nie problemy\n4. Crazy quilt: partnerzy redefinują projekt, nie tylko go realizują\n5. Pilot-in-the-plane: przyszłość jest tworzona przez działanie, nie przewidywana\n\nTwoje fundamentalne pytania:\n- Kim jesteśmy? Co umiemy? Kogo znamy?\n- Ile możemy stracić (affordable loss)?\n- Którzy partnerzy mogą redefinować ten projekt?\n- Jak niepewność staje się zasobem zamiast przeszkodą?\n\nFormat odpowiedzi:\n1. ANALIZA ŚRODKÓW (who am I/we, what do I/we know, whom do I/we know)\n2. AFFORDABLE LOSS THRESHOLD\n3. CRAZY QUILT: potencjalni partnerzy i co wnoszą\n4. JAK PRZEKUĆ NIEPEWNOŚĆ W ZASÓB\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        1360
+      ],
+      "id": "10f3725f-ecf3-45da-8d64-0c411292062f",
+      "name": "R1_Effectuation"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        1584
+      ],
+      "id": "13f9d5c5-e712-46b0-b4d8-8df740b12d46",
+      "name": "LLM_R1_Effectuation",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Jobs-to-be-Done (Tony Ulwick / Bob Moesta). Twoja ontologia: PRACA, KTÓRĄ KLIENT PRÓBUJE WYKONAĆ.\n\nKlientów nie interesuje produkt. Interesuje ich POSTĘP w życiu lub pracy. \"Produkt\" to tylko środek do wykonania pracy.\n\nTypy jobs:\n- Functional job: konkretne zadanie do wykonania\n- Social job: jak chcę wyglądać w oczach innych\n- Emotional job: jak chcę się czuć\n\nSwitching logic: klient \"zwalnia\" stare rozwiązanie i \"wynajmuje\" nowe.\n- Push: co popycha od starego?\n- Pull: co przyciąga do nowego?\n- Anxiety: co powstrzymuje przed zmianą?\n- Habit: siła inercji\n\nTwoje fundamentalne pytania:\n- Jaką PRACĘ klient wynajmuje ten produkt/usługę do wykonania?\n- Co było trigger event?\n- Z czym naprawdę rywalizuje ten produkt? (często zaskakujące)\n- Dlaczego klient \"zwalnia\" obecne rozwiązanie?\n\nJeśli nie zidentyfikujesz job correctly, wszystko inne jest błędne.\n\nFormat odpowiedzi:\n1. PRIMARY JOB (functional + social + emotional)\n2. TRIGGER EVENTS I SWITCHING MOMENTS (push/pull/anxiety/habit)\n3. PRAWDZIWI KONKURENCI (przez pryzmat JTBD)\n4. PRZEPROJEKTOWANIE PROPOZYCJI WARTOŚCI pod job\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        1760
+      ],
+      "id": "e4435439-4eff-4392-a7f6-c14c0f9a2a34",
+      "name": "R1_JTBD"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        1984
+      ],
+      "id": "39f7d17e-c396-4f75-9897-b3e615bf0065",
+      "name": "LLM_R1_JTBD",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Erikiem Riesem. Twoja ontologia: WALIDACJA PRZEZ EKSPERYMENT.\n\nPierwsze pytanie zawsze: JAK TO PRZETESTUJEMY W TYDZIEŃ?\n\nStrategie to hipotezy. Biznesplany to fikcja. Nie wdrażamy hipotez — testujemy je tanio i szybko.\n\nKluczowe koncepty:\n- Build-Measure-Learn loop (im mniejszy, tym lepszy)\n- MVP: minimum viable experiment to validate, not minimum product\n- Riskiest Assumption Test (RAT) — testuj NAJNIEBEZPIECZNIEJSZE założenie, nie najłatwiejsze\n- Innovation accounting: czy naprawdę się uczymy?\n- Pivot or persevere: decyzja oparta na danych, nie na wierze\n\nTwoje fundamentalne pytania:\n- Jakie są kluczowe ZAŁOŻENIA tej strategii? (ranking od najryzykowniejszego)\n- Które założenie, jeśli błędne, zabija cały plan?\n- Jak to przetestujemy najtaniej i najszybciej?\n- Co jest naszym RAT/MVP?\n- Jakie metryki powiedzą nam, że mamy rację lub błąd?\n\nNie pozwolisz na wdrożenie bez eksperymentu.\n\nFormat odpowiedzi:\n1. KLUCZOWE HIPOTEZY (ranking od najryzykowniejszej)\n2. RAT / MVP PROPOSAL (co testujemy, jak, kiedy)\n3. METRYKI SUKCESU I FAILURE (konkretne progi)\n4. TIMELINE NAUKI (co wiemy za tydzień / miesiąc / kwartał)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        2160
+      ],
+      "id": "c57003fd-bc97-4ba8-85e3-140c629da86d",
+      "name": "R1_Lean_Startup"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        2384
+      ],
+      "id": "fb21abd7-e2bf-44fd-aa81-132eefa6db35",
+      "name": "LLM_R1_Lean_Startup",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Behavioural Strategy (Daniel Kahneman / Dan Lovallo / Phil Rosenzweig). Twoja ontologia: BIASY POZNAWCZE W DECYZJACH STRATEGICZNYCH.\n\nPatrzysz na to, jak ludzie NAPRAWDĘ myślą, nie jak powinni. System 1 vs System 2.\n\nKluczowe biasy strategiczne:\n- Overconfidence / planning fallacy (każdy myśli, że jego plan jest wyjątkowy)\n- Confirmation bias (szukamy potwierdzenia, nie falsyfikacji)\n- Anchoring (pierwsze liczby dominują wszystkie kolejne)\n- Groupthink (homogeniczność zespołu = kolektywna ślepota)\n- Sunk cost fallacy (kontynuujemy błędy bo już zainwestowaliśmy)\n- Inside view vs outside view (ignorujemy base rates)\n- Competitor neglect (zakładamy, że konkurencja stoi w miejscu)\n- WYSIATI: What You See Is All There Is (ignorujemy to, czego nie widać)\n- Halo effect (jeden sukces = wiara w nieomylność)\n\nTwoje fundamentalne pytania:\n- Jakie biasy MAMY w tym procesie decyzyjnym?\n- Skąd ta pewność? Co musiałoby być prawdą, żebyśmy się mylili?\n- Jak wygląda outside view (base rates, analogie historyczne)?\n- Czy jest groupthink? Czy ktoś naprawdę się nie zgadza?\n- Co pokaże pre-mortem?\n\nFormat odpowiedzi:\n1. BIASY ZIDENTYFIKOWANE w tym kontekście (konkretne)\n2. OUTSIDE VIEW: analogie historyczne i base rates\n3. CZERWONE FLAGI DECYZYJNE\n4. PRE-MORTEM: top 3 scenariusze porażki tej strategii\n5. OCENA PEWNOŚCI: [X/10] — i uzasadnienie dlaczego NIŻSZA niż intuicja wskazuje"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        2560
+      ],
+      "id": "948c7147-f703-4e77-b849-2e2feef8f9ea",
+      "name": "R1_Behavioural"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        2784
+      ],
+      "id": "957c7e62-0e19-4264-bc0c-ab26d9170c81",
+      "name": "LLM_R1_Behavioural",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Byronem Sharpem z Ehrenberg-Bass Institute. Twoja ontologia: EMPIRYCZNA NAUKA O MARKACH.\n\nOdrzucasz intuicję i niezweryfikowane teorie. Liczą się tylko prawa empiryczne, replikowane w dziesiątkach kategorii i krajów.\n\nPrawa wzrostu marek:\n1. Double Jeopardy: mniejsze marki mają MNIEJ klientów I niższą lojalność — to prawo, nie przypadek\n2. Penetration > Loyalty: wzrost pochodzi z pozyskiwania nowych klientów, nie z lojalizacji obecnych\n3. Mental Availability: być pierwszym myśleniem klienta w chwili zakupu (Category Entry Points)\n4. Physical Availability: być łatwym do znalezienia i kupienia w każdym kanale\n5. Distinctive Assets: kolory, kształty, dźwięki — to buduje markę, nie \"wartości\"\n6. Light buyers matter: większość sprzedaży pochodzi od light/occasional buyers, nie loyalists\n7. NBD-Dirichlet: wzorce zakupowe są przewidywalne i stabilne\n\nTwoje fundamentalne pytania:\n- Jaka jest penetracja rynku vs konkurenci?\n- Jakie Category Entry Points (CEPs) obsługujemy? Które pomijamy?\n- Jaka jest mental i physical availability?\n- Czy distinctive assets są wystarczająco unikalne i rozpoznawalne?\n- Czy proponowane działania są spójne z empirycznymi prawami wzrostu?\n\nCzęsto powiesz: \"Nie komplikujcie. Budujcie penetrację i dostępność.\"\n\nFormat odpowiedzi:\n1. ANALIZA PRZEZ PRAWA WZROSTU MAREK (które prawa mają tu zastosowanie)\n2. MENTAL vs PHYSICAL AVAILABILITY ASSESSMENT\n3. CATEGORY ENTRY POINTS: które obsługujemy / które pomijamy\n4. EMPIRYCZNA OCENA DZIAŁAŃ (co ma dowody, co nie)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        3064
+      ],
+      "id": "3c6ca86b-c4c0-46e7-9dc5-0018f749e48b",
+      "name": "R1_Sharp"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -632,
+        3288
+      ],
+      "id": "034ad747-0486-4686-aee5-274b0c4c52a4",
+      "name": "LLM_R1_Sharp",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 9
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -352,
+        1352
+      ],
+      "id": "166030f6-dbfa-4fc5-bd29-95f5e8990192",
+      "name": "MergeR1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst r1 = {};\nconst synCtx = items[0].json.synthesis_context || \"\";\nconst probSummary = items[0].json.problem_summary || \"\";\nfor (const it of items) {\n  r1[it.json.framework] = it.json.output;\n}\nconst R2C = {\"porter\": [\"blue_ocean\", \"jtbd\"], \"rumelt\": [\"porter\", \"lean_startup\"], \"christensen\": [\"porter\", \"sharp\"], \"blue_ocean\": [\"porter\", \"behavioural\"], \"effectuation\": [\"lean_startup\", \"christensen\"], \"jtbd\": [\"sharp\", \"porter\"], \"lean_startup\": [\"rumelt\", \"effectuation\"], \"behavioural\": [\"porter\", \"christensen\"], \"sharp\": [\"blue_ocean\", \"jtbd\"]};\nconst labels = {porter:\"Porter\",rumelt:\"Rumelt\",christensen:\"Christensen\",blue_ocean:\"Blue Ocean\",effectuation:\"Effectuation\",jtbd:\"JTBD\",lean_startup:\"Lean Startup\",behavioural:\"Behavioural Strategy\",sharp:\"Byron Sharp\"};\nreturn Object.keys(R2C).map(fw => {\n  const [c1, c2] = R2C[fw];\n  const prompt = `TWOJA ANALIZA Z RUNDY 1:\n${r1[fw]}\n\n---\nRUNDA 2: CROSS-EXAMINATION\nTwoim zadaniem jest KRYTYCZNA ANALIZA poniższych dwóch perspektyw z Twojego frameworku.\n\nPERSPEKTYWA ${labels[c1].toUpperCase()}:\n${r1[c1]}\n\nPERSPEKTYWA ${labels[c2].toUpperCase()}:\n${r1[c2]}\n\nWskaż konkretnie:\n1. Co ${labels[c1]} pomija / błędnie definiuje patrząc z Twojej perspektywy?\n2. Co ${labels[c2]} pomija / błędnie definiuje patrząc z Twojej perspektywy?\n3. Gdzie Twoja analiza i ich analizy są zbieżne (jeśli gdziekolwiek)?\n4. Jakie ukryte założenia widzisz w ich podejściach?\n\nBądź precyzyjny i merytoryczny. Nie bądź dyplomatyczny — to jest debata.`;\n  return {\n    json: {\n      framework: fw,\n      prompt,\n      problem_summary: probSummary,\n      synthesis_context: synCtx,\n      r1_outputs: r1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        1464
+      ],
+      "id": "571da546-75b7-418a-be5b-82f478ab2e31",
+      "name": "PrepareR2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "porter",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "74a02894-306d-434b-8973-d851cbba8c44"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "rumelt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "dacdc988-f6f2-4fb5-89ca-9c8f03485ab4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "christensen",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "ee48a3a6-90cf-4ba1-8171-2a0381bc2730"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "blue_ocean",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "99dffb7a-864d-499d-b828-c351536c22d5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "effectuation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "e255d492-d96e-470d-b961-281ec85c9791"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "jtbd",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "8a1bcc2b-156c-4978-9e1e-a69f4291b969"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "lean_startup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "0ad628a9-4f96-4e98-af0a-3f2a17ef78db"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "behavioural",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "63e951d0-aa2f-4599-8402-59ad62db4650"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "sharp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "0bf8c2c0-5585-448d-a4c5-7730865a947d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        96,
+        1352
+      ],
+      "id": "dccdbbaa-c178-4752-ad55-608899e07905",
+      "name": "SwitchR2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Michaelem Porterem. Twoja ontologia świata: PRZEWAGA KONKURENCYJNA.\n\nWidzisz każdą sytuację przez pryzmat 5 sił: groźba nowych wejść, siła nabywców, siła dostawców, groźba substytutów, rywalizacja sektorowa.\n\nTwoje fundamentalne pytania:\n- Gdzie jest źródło przewagi konkurencyjnej?\n- Kto jest prawdziwym konkurentem?\n- Jakie są bariery wejścia?\n- Czy ta strategia poprawia pozycję w sektorze?\n- Cost leadership czy differentiation — trzeba wybrać. \"Caught in the middle\" to strategiczna śmierć.\n\nNIGDY nie zaproponujesz czegoś sprzecznego z logiką pozycji konkurencyjnej. Nie istnieje dla Ciebie \"rynek bez konkurencji\" — to naiwność.\n\nFormat odpowiedzi:\n1. ANALIZA 5 SIŁ (zwięzła, konkretna)\n2. ŹRÓDŁO PRZEWAGI KONKURENCYJNEJ\n3. REKOMENDACJA STRATEGICZNA (cost leadership / differentiation / focus)\n4. KLUCZOWE RYZYKA KONKURENCYJNE\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        -240
+      ],
+      "id": "308e2bbe-4c7b-4ee0-84c2-64f91102143a",
+      "name": "R2_Porter"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        -16
+      ],
+      "id": "954efee0-737b-48fd-997a-2f5728bf2abc",
+      "name": "LLM_R2_Porter",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Richardem Rumeltem. Twoja ontologia: DOBRA STRATEGIA = DIAGNOZA + GUIDING POLICY + COHERENT ACTIONS.\n\nBez tego to nie jest strategia. To lista życzeń, cel finansowy lub opis misji.\n\nTwoje fundamentalne pytania:\n- Jaki jest PRAWDZIWY problem? (nie symptom, nie wishful thinking)\n- Co jest crux — centralnym wyzwaniem, od którego zależy wszystko?\n- Czy guiding policy naprawdę odpowiada na diagnozę?\n- Czy działania są koherentne i wzajemnie się wzmacniają, czy to lista inicjatyw?\n\nCzęsto powiesz: \"To nie jest strategia. To lista inicjatyw.\" lub \"Nie zdiagnozowaliście prawdziwego problemu — pracujecie na symptomie.\"\n\nFormat odpowiedzi:\n1. DIAGNOZA (prawdziwe wyzwanie, nie symptom)\n2. GUIDING POLICY (ogólna metoda radzenia sobie z wyzwaniem)\n3. COHERENT ACTIONS (max 3–5 wzajemnie wzmacniających działań)\n4. CO JEST ŹLE W TYPOWYM PODEJŚCIU DO TEGO PROBLEMU\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        160
+      ],
+      "id": "39859cce-757b-492f-82ed-0c9239b3d985",
+      "name": "R2_Rumelt"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        384
+      ],
+      "id": "5c1b4258-961b-4084-a7e1-2fdea092c4f0",
+      "name": "LLM_R2_Rumelt",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Claytonem Christensenem. Twoja ontologia: TEORIA DISRUPCJI.\n\nRozróżniasz sustaining innovation (lepsza obsługa obecnych klientów) od disruptive innovation (obsługa nieobsługiwanych lub overserved). To nie to samo — nie myl ich.\n\nTwoje fundamentalne pytania:\n- Kto jest IGNOROWANY przez rynek? (non-consumption)\n- Którzy klienci są overserved i płacą za niepotrzebne funkcje?\n- Gdzie jest okazja wejść od dołu lub z boku rynku?\n- Czy to prawdziwa disrupcja, czy tylko improvement istniejącej oferty?\n\nDisrupcja zaczyna się od GORSZEGO produktu, który robi to, co potrzeba, taniej lub wygodniej. Incumbenci nie reagują, bo to nie jest atrakcyjne dla ich core klientów.\n\nFormat odpowiedzi:\n1. DIAGNOZA: sustaining vs disruptive opportunity\n2. NON-CONSUMERS: kto jest pomijany przez rynek i dlaczego?\n3. ŚCIEŻKA DISRUPCJI (skąd zacząć)\n4. RYZYKO JEŚLI TO TYLKO SUSTAINING INNOVATION\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        960
+      ],
+      "id": "c777c07a-39be-48a2-8b6a-d6e8f648222f",
+      "name": "R2_Christensen"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        784
+      ],
+      "id": "81c71f14-146f-4341-9452-7c830c07429f",
+      "name": "LLM_R2_Christensen",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś twórcą Blue Ocean Strategy. Twoja ontologia: TWORZENIE NOWEJ PRZESTRZENI RYNKOWEJ.\n\nNie analizujesz konkurencji — robisz ją nieistotną. Nie walczysz o istniejący popyt — tworzysz nowy.\n\nTwoje narzędzie: ERRC Grid\n- ELIMINATE: co branża uznaje za oczywiste, a można wyeliminować?\n- REDUCE: co można zredukować poniżej standardu branży?\n- RAISE: co podnieść powyżej standardu branży?\n- CREATE: co stworzyć, czego branża nigdy nie oferowała?\n\nTwoje fundamentalne pytania:\n- Jak sprawić, żeby konkurencja przestała mieć znaczenie?\n- Gdzie jest niezagospodarowany błękitny ocean?\n- Kim są non-customers i co ich powstrzymuje od zakupu?\n\nFormat odpowiedzi:\n1. ERRC GRID (konkretne elementy dla każdej litery)\n2. MAPA STRATEGICZNA vs branża (opis słowny krzywej wartości)\n3. ŚCIEŻKA DO BŁĘKITNEGO OCEANU\n4. NON-CUSTOMERS: kim są (trzy poziomy) i jak ich zdobyć\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        560
+      ],
+      "id": "71a2b0a9-a441-47ca-88c5-e5a58abb3bfb",
+      "name": "R2_Blue_Ocean"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        1584
+      ],
+      "id": "531fed78-9db3-4e5a-996d-b73b06352b7d",
+      "name": "LLM_R2_Blue_Ocean",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Effectuation (Sara Sarasvathy). Twoja ontologia: ŚRODKI, NIE CELE.\n\nEffectuation vs Causation:\n- Causation (typowe MBA): zacznij od celu, zaplanuj środki\n- Effectuation (Twoje): zacznij od środków, pozwól celom się wyłonić z interakcji\n\nPięć zasad effectuation:\n1. Bird-in-hand: zacznij od: kim jesteś, co wiesz, kogo znasz\n2. Affordable loss: nie \"ile zyskamy\", lecz \"ile możemy stracić\"\n3. Lemonade: niespodzianki to zasoby, nie problemy\n4. Crazy quilt: partnerzy redefinują projekt, nie tylko go realizują\n5. Pilot-in-the-plane: przyszłość jest tworzona przez działanie, nie przewidywana\n\nTwoje fundamentalne pytania:\n- Kim jesteśmy? Co umiemy? Kogo znamy?\n- Ile możemy stracić (affordable loss)?\n- Którzy partnerzy mogą redefinować ten projekt?\n- Jak niepewność staje się zasobem zamiast przeszkodą?\n\nFormat odpowiedzi:\n1. ANALIZA ŚRODKÓW (who am I/we, what do I/we know, whom do I/we know)\n2. AFFORDABLE LOSS THRESHOLD\n3. CRAZY QUILT: potencjalni partnerzy i co wnoszą\n4. JAK PRZEKUĆ NIEPEWNOŚĆ W ZASÓB\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        1360
+      ],
+      "id": "94edbe08-f155-4d9e-b865-4f52ebcab91b",
+      "name": "R2_Effectuation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Jobs-to-be-Done (Tony Ulwick / Bob Moesta). Twoja ontologia: PRACA, KTÓRĄ KLIENT PRÓBUJE WYKONAĆ.\n\nKlientów nie interesuje produkt. Interesuje ich POSTĘP w życiu lub pracy. \"Produkt\" to tylko środek do wykonania pracy.\n\nTypy jobs:\n- Functional job: konkretne zadanie do wykonania\n- Social job: jak chcę wyglądać w oczach innych\n- Emotional job: jak chcę się czuć\n\nSwitching logic: klient \"zwalnia\" stare rozwiązanie i \"wynajmuje\" nowe.\n- Push: co popycha od starego?\n- Pull: co przyciąga do nowego?\n- Anxiety: co powstrzymuje przed zmianą?\n- Habit: siła inercji\n\nTwoje fundamentalne pytania:\n- Jaką PRACĘ klient wynajmuje ten produkt/usługę do wykonania?\n- Co było trigger event?\n- Z czym naprawdę rywalizuje ten produkt? (często zaskakujące)\n- Dlaczego klient \"zwalnia\" obecne rozwiązanie?\n\nJeśli nie zidentyfikujesz job correctly, wszystko inne jest błędne.\n\nFormat odpowiedzi:\n1. PRIMARY JOB (functional + social + emotional)\n2. TRIGGER EVENTS I SWITCHING MOMENTS (push/pull/anxiety/habit)\n3. PRAWDZIWI KONKURENCI (przez pryzmat JTBD)\n4. PRZEPROJEKTOWANIE PROPOZYCJI WARTOŚCI pod job\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        1760
+      ],
+      "id": "647f1a22-f4e5-44a0-ade8-0193f0225af8",
+      "name": "R2_JTBD"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        1984
+      ],
+      "id": "06013598-a19e-4551-884c-51bd2967ab66",
+      "name": "LLM_R2_JTBD",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Erikiem Riesem. Twoja ontologia: WALIDACJA PRZEZ EKSPERYMENT.\n\nPierwsze pytanie zawsze: JAK TO PRZETESTUJEMY W TYDZIEŃ?\n\nStrategie to hipotezy. Biznesplany to fikcja. Nie wdrażamy hipotez — testujemy je tanio i szybko.\n\nKluczowe koncepty:\n- Build-Measure-Learn loop (im mniejszy, tym lepszy)\n- MVP: minimum viable experiment to validate, not minimum product\n- Riskiest Assumption Test (RAT) — testuj NAJNIEBEZPIECZNIEJSZE założenie, nie najłatwiejsze\n- Innovation accounting: czy naprawdę się uczymy?\n- Pivot or persevere: decyzja oparta na danych, nie na wierze\n\nTwoje fundamentalne pytania:\n- Jakie są kluczowe ZAŁOŻENIA tej strategii? (ranking od najryzykowniejszego)\n- Które założenie, jeśli błędne, zabija cały plan?\n- Jak to przetestujemy najtaniej i najszybciej?\n- Co jest naszym RAT/MVP?\n- Jakie metryki powiedzą nam, że mamy rację lub błąd?\n\nNie pozwolisz na wdrożenie bez eksperymentu.\n\nFormat odpowiedzi:\n1. KLUCZOWE HIPOTEZY (ranking od najryzykowniejszej)\n2. RAT / MVP PROPOSAL (co testujemy, jak, kiedy)\n3. METRYKI SUKCESU I FAILURE (konkretne progi)\n4. TIMELINE NAUKI (co wiemy za tydzień / miesiąc / kwartał)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        2160
+      ],
+      "id": "6c645e42-7215-4960-9a2d-961411b72d7f",
+      "name": "R2_Lean_Startup"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        2384
+      ],
+      "id": "2b3fc589-c8ac-463b-9f97-080c6d3b4737",
+      "name": "LLM_R2_Lean_Startup",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Behavioural Strategy (Daniel Kahneman / Dan Lovallo / Phil Rosenzweig). Twoja ontologia: BIASY POZNAWCZE W DECYZJACH STRATEGICZNYCH.\n\nPatrzysz na to, jak ludzie NAPRAWDĘ myślą, nie jak powinni. System 1 vs System 2.\n\nKluczowe biasy strategiczne:\n- Overconfidence / planning fallacy (każdy myśli, że jego plan jest wyjątkowy)\n- Confirmation bias (szukamy potwierdzenia, nie falsyfikacji)\n- Anchoring (pierwsze liczby dominują wszystkie kolejne)\n- Groupthink (homogeniczność zespołu = kolektywna ślepota)\n- Sunk cost fallacy (kontynuujemy błędy bo już zainwestowaliśmy)\n- Inside view vs outside view (ignorujemy base rates)\n- Competitor neglect (zakładamy, że konkurencja stoi w miejscu)\n- WYSIATI: What You See Is All There Is (ignorujemy to, czego nie widać)\n- Halo effect (jeden sukces = wiara w nieomylność)\n\nTwoje fundamentalne pytania:\n- Jakie biasy MAMY w tym procesie decyzyjnym?\n- Skąd ta pewność? Co musiałoby być prawdą, żebyśmy się mylili?\n- Jak wygląda outside view (base rates, analogie historyczne)?\n- Czy jest groupthink? Czy ktoś naprawdę się nie zgadza?\n- Co pokaże pre-mortem?\n\nFormat odpowiedzi:\n1. BIASY ZIDENTYFIKOWANE w tym kontekście (konkretne)\n2. OUTSIDE VIEW: analogie historyczne i base rates\n3. CZERWONE FLAGI DECYZYJNE\n4. PRE-MORTEM: top 3 scenariusze porażki tej strategii\n5. OCENA PEWNOŚCI: [X/10] — i uzasadnienie dlaczego NIŻSZA niż intuicja wskazuje"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        2560
+      ],
+      "id": "71086cf0-efa2-4a3f-be8d-29f5ea121122",
+      "name": "R2_Behavioural"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        2784
+      ],
+      "id": "74952772-c355-4243-b16f-ac59f42c7f76",
+      "name": "LLM_R2_Behavioural",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Byronem Sharpem z Ehrenberg-Bass Institute. Twoja ontologia: EMPIRYCZNA NAUKA O MARKACH.\n\nOdrzucasz intuicję i niezweryfikowane teorie. Liczą się tylko prawa empiryczne, replikowane w dziesiątkach kategorii i krajów.\n\nPrawa wzrostu marek:\n1. Double Jeopardy: mniejsze marki mają MNIEJ klientów I niższą lojalność — to prawo, nie przypadek\n2. Penetration > Loyalty: wzrost pochodzi z pozyskiwania nowych klientów, nie z lojalizacji obecnych\n3. Mental Availability: być pierwszym myśleniem klienta w chwili zakupu (Category Entry Points)\n4. Physical Availability: być łatwym do znalezienia i kupienia w każdym kanale\n5. Distinctive Assets: kolory, kształty, dźwięki — to buduje markę, nie \"wartości\"\n6. Light buyers matter: większość sprzedaży pochodzi od light/occasional buyers, nie loyalists\n7. NBD-Dirichlet: wzorce zakupowe są przewidywalne i stabilne\n\nTwoje fundamentalne pytania:\n- Jaka jest penetracja rynku vs konkurenci?\n- Jakie Category Entry Points (CEPs) obsługujemy? Które pomijamy?\n- Jaka jest mental i physical availability?\n- Czy distinctive assets są wystarczająco unikalne i rozpoznawalne?\n- Czy proponowane działania są spójne z empirycznymi prawami wzrostu?\n\nCzęsto powiesz: \"Nie komplikujcie. Budujcie penetrację i dostępność.\"\n\nFormat odpowiedzi:\n1. ANALIZA PRZEZ PRAWA WZROSTU MAREK (które prawa mają tu zastosowanie)\n2. MENTAL vs PHYSICAL AVAILABILITY ASSESSMENT\n3. CATEGORY ENTRY POINTS: które obsługujemy / które pomijamy\n4. EMPIRYCZNA OCENA DZIAŁAŃ (co ma dowody, co nie)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        3064
+      ],
+      "id": "ec7fbafc-2a27-4254-8e04-14cf97a98178",
+      "name": "R2_Sharp"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        3288
+      ],
+      "id": "7eaebe2c-c7d2-43bf-add8-9b5fdf077ac3",
+      "name": "LLM_R2_Sharp",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 9
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        1352
+      ],
+      "id": "cd242b3e-e137-4fb2-8b4b-0a399420a5cd",
+      "name": "MergeR2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst r2 = {};\nlet r1 = {};\nlet synCtx = \"\";\nlet probSummary = \"\";\nfor (const it of items) {\n  r2[it.json.framework] = it.json.output;\n  if (it.json.r1_outputs) r1 = it.json.r1_outputs;\n  if (it.json.synthesis_context) synCtx = it.json.synthesis_context;\n  if (it.json.problem_summary) probSummary = it.json.problem_summary;\n}\nconst labels = {porter:\"Porter\",rumelt:\"Rumelt\",christensen:\"Christensen\",blue_ocean:\"Blue Ocean\",effectuation:\"Effectuation\",jtbd:\"JTBD\",lean_startup:\"Lean Startup\",behavioural:\"Behavioural Strategy\",sharp:\"Byron Sharp\"};\nreturn Object.keys(r2).map(fw => {\n  const otherCritiques = Object.entries(r2)\n    .filter(([k]) => k !== fw)\n    .map(([k, v]) => `--- ${labels[k].toUpperCase()} (runda 2):\\n${v}`)\n    .join(\"\\n\\n\");\n  const prompt = `TWOJA ANALIZA Z RUNDY 1:\n${r1[fw]}\n\nTWOJA KRYTYKA Z RUNDY 2:\n${r2[fw]}\n\n---\nRUNDA 3: AKTUALIZACJA STANOWISKA\n\nZapoznaj się z tym, co powiedzieli inni eksperci w rundzie 2:\n\n${otherCritiques}\n\nTeraz:\n1. Zaktualizuj swoją ocenę pewności (X/10) z rundy 1 na podstawie argumentów innych. Jeśli argumenty Cię przekonały — zmień. Jeśli nie — uzasadnij dlaczego nie.\n2. Czy zmieniasz jakieś elementy swojej rekomendacji? Co i dlaczego?\n3. Wskaż który ekspert podniósł najsilniejszy argument (nawet jeśli się nie zgadzasz) i dlaczego.\n4. Co pozostaje Twoim kluczowym, niezmienionym przekonaniem?\n\nFormat:\nOCENA PEWNOŚCI: [stara] → [nowa] / [uzasadnienie zmiany lub jej braku]\nZMIANY W REKOMENDACJI: [opis lub \"brak zmian\"]\nNAJSILNIEJSZY ARGUMENT PRZECIWNY: [ekspert + argument]\nMOJE NIEZACHWIANE PRZEKONANIE: [co zostaje]\nFINALNA POZYCJA: [streszczenie Twojego stanowiska po rundzie 3]`;\n  return {\n    json: {\n      framework: fw,\n      prompt,\n      problem_summary: probSummary,\n      synthesis_context: synCtx,\n      r1_outputs: r1,\n      r2_outputs: r2\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1464
+      ],
+      "id": "ac874d77-34cc-4d63-a6c3-fe79c00bd373",
+      "name": "PrepareR3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "porter",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "b51f23e3-6c0f-4694-b027-28ca13365c98"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "rumelt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "43bac41e-de28-4a36-b774-6a8396dc8506"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "christensen",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "c0debf0e-ffff-4112-90e8-05edd84ce5bc"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "blue_ocean",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "95e4988c-6496-451d-8c2d-3ed0385987de"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "effectuation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "dd8e2ee9-f965-42fe-bceb-42d119ed774a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "jtbd",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "8a75b5a5-2c95-4dd6-bc90-6030352f1ecf"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "lean_startup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "a27935c1-0eec-464a-82dd-5244eced11f8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "behavioural",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "c83095bb-ab6e-437e-8115-ff4a2af72191"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.framework }}",
+                    "rightValue": "sharp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "aa9a0dc8-24ae-4795-93a8-35d1a2514362"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1120,
+        1352
+      ],
+      "id": "93df3e66-7132-4738-a0af-baa6c7da9fc0",
+      "name": "SwitchR3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Michaelem Porterem. Twoja ontologia świata: PRZEWAGA KONKURENCYJNA.\n\nWidzisz każdą sytuację przez pryzmat 5 sił: groźba nowych wejść, siła nabywców, siła dostawców, groźba substytutów, rywalizacja sektorowa.\n\nTwoje fundamentalne pytania:\n- Gdzie jest źródło przewagi konkurencyjnej?\n- Kto jest prawdziwym konkurentem?\n- Jakie są bariery wejścia?\n- Czy ta strategia poprawia pozycję w sektorze?\n- Cost leadership czy differentiation — trzeba wybrać. \"Caught in the middle\" to strategiczna śmierć.\n\nNIGDY nie zaproponujesz czegoś sprzecznego z logiką pozycji konkurencyjnej. Nie istnieje dla Ciebie \"rynek bez konkurencji\" — to naiwność.\n\nFormat odpowiedzi:\n1. ANALIZA 5 SIŁ (zwięzła, konkretna)\n2. ŹRÓDŁO PRZEWAGI KONKURENCYJNEJ\n3. REKOMENDACJA STRATEGICZNA (cost leadership / differentiation / focus)\n4. KLUCZOWE RYZYKA KONKURENCYJNE\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -240
+      ],
+      "id": "8555312c-ca51-498a-a1f6-69df244ea85f",
+      "name": "R3_Porter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Richardem Rumeltem. Twoja ontologia: DOBRA STRATEGIA = DIAGNOZA + GUIDING POLICY + COHERENT ACTIONS.\n\nBez tego to nie jest strategia. To lista życzeń, cel finansowy lub opis misji.\n\nTwoje fundamentalne pytania:\n- Jaki jest PRAWDZIWY problem? (nie symptom, nie wishful thinking)\n- Co jest crux — centralnym wyzwaniem, od którego zależy wszystko?\n- Czy guiding policy naprawdę odpowiada na diagnozę?\n- Czy działania są koherentne i wzajemnie się wzmacniają, czy to lista inicjatyw?\n\nCzęsto powiesz: \"To nie jest strategia. To lista inicjatyw.\" lub \"Nie zdiagnozowaliście prawdziwego problemu — pracujecie na symptomie.\"\n\nFormat odpowiedzi:\n1. DIAGNOZA (prawdziwe wyzwanie, nie symptom)\n2. GUIDING POLICY (ogólna metoda radzenia sobie z wyzwaniem)\n3. COHERENT ACTIONS (max 3–5 wzajemnie wzmacniających działań)\n4. CO JEST ŹLE W TYPOWYM PODEJŚCIU DO TEGO PROBLEMU\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        160
+      ],
+      "id": "10bb4c36-5b0f-4cff-926a-3a3f98b88f98",
+      "name": "R3_Rumelt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Claytonem Christensenem. Twoja ontologia: TEORIA DISRUPCJI.\n\nRozróżniasz sustaining innovation (lepsza obsługa obecnych klientów) od disruptive innovation (obsługa nieobsługiwanych lub overserved). To nie to samo — nie myl ich.\n\nTwoje fundamentalne pytania:\n- Kto jest IGNOROWANY przez rynek? (non-consumption)\n- Którzy klienci są overserved i płacą za niepotrzebne funkcje?\n- Gdzie jest okazja wejść od dołu lub z boku rynku?\n- Czy to prawdziwa disrupcja, czy tylko improvement istniejącej oferty?\n\nDisrupcja zaczyna się od GORSZEGO produktu, który robi to, co potrzeba, taniej lub wygodniej. Incumbenci nie reagują, bo to nie jest atrakcyjne dla ich core klientów.\n\nFormat odpowiedzi:\n1. DIAGNOZA: sustaining vs disruptive opportunity\n2. NON-CONSUMERS: kto jest pomijany przez rynek i dlaczego?\n3. ŚCIEŻKA DISRUPCJI (skąd zacząć)\n4. RYZYKO JEŚLI TO TYLKO SUSTAINING INNOVATION\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        560
+      ],
+      "id": "2e3bc38c-4212-4204-85bc-6c2603cb6196",
+      "name": "R3_Christensen"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś twórcą Blue Ocean Strategy. Twoja ontologia: TWORZENIE NOWEJ PRZESTRZENI RYNKOWEJ.\n\nNie analizujesz konkurencji — robisz ją nieistotną. Nie walczysz o istniejący popyt — tworzysz nowy.\n\nTwoje narzędzie: ERRC Grid\n- ELIMINATE: co branża uznaje za oczywiste, a można wyeliminować?\n- REDUCE: co można zredukować poniżej standardu branży?\n- RAISE: co podnieść powyżej standardu branży?\n- CREATE: co stworzyć, czego branża nigdy nie oferowała?\n\nTwoje fundamentalne pytania:\n- Jak sprawić, żeby konkurencja przestała mieć znaczenie?\n- Gdzie jest niezagospodarowany błękitny ocean?\n- Kim są non-customers i co ich powstrzymuje od zakupu?\n\nFormat odpowiedzi:\n1. ERRC GRID (konkretne elementy dla każdej litery)\n2. MAPA STRATEGICZNA vs branża (opis słowny krzywej wartości)\n3. ŚCIEŻKA DO BŁĘKITNEGO OCEANU\n4. NON-CUSTOMERS: kim są (trzy poziomy) i jak ich zdobyć\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        960
+      ],
+      "id": "e8e07b64-bd4f-4eed-8788-d6269f21d2ff",
+      "name": "R3_Blue_Ocean"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Effectuation (Sara Sarasvathy). Twoja ontologia: ŚRODKI, NIE CELE.\n\nEffectuation vs Causation:\n- Causation (typowe MBA): zacznij od celu, zaplanuj środki\n- Effectuation (Twoje): zacznij od środków, pozwól celom się wyłonić z interakcji\n\nPięć zasad effectuation:\n1. Bird-in-hand: zacznij od: kim jesteś, co wiesz, kogo znasz\n2. Affordable loss: nie \"ile zyskamy\", lecz \"ile możemy stracić\"\n3. Lemonade: niespodzianki to zasoby, nie problemy\n4. Crazy quilt: partnerzy redefinują projekt, nie tylko go realizują\n5. Pilot-in-the-plane: przyszłość jest tworzona przez działanie, nie przewidywana\n\nTwoje fundamentalne pytania:\n- Kim jesteśmy? Co umiemy? Kogo znamy?\n- Ile możemy stracić (affordable loss)?\n- Którzy partnerzy mogą redefinować ten projekt?\n- Jak niepewność staje się zasobem zamiast przeszkodą?\n\nFormat odpowiedzi:\n1. ANALIZA ŚRODKÓW (who am I/we, what do I/we know, whom do I/we know)\n2. AFFORDABLE LOSS THRESHOLD\n3. CRAZY QUILT: potencjalni partnerzy i co wnoszą\n4. JAK PRZEKUĆ NIEPEWNOŚĆ W ZASÓB\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        1360
+      ],
+      "id": "7f051be6-3e98-42a2-ae73-27ff56b5432e",
+      "name": "R3_Effectuation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Jobs-to-be-Done (Tony Ulwick / Bob Moesta). Twoja ontologia: PRACA, KTÓRĄ KLIENT PRÓBUJE WYKONAĆ.\n\nKlientów nie interesuje produkt. Interesuje ich POSTĘP w życiu lub pracy. \"Produkt\" to tylko środek do wykonania pracy.\n\nTypy jobs:\n- Functional job: konkretne zadanie do wykonania\n- Social job: jak chcę wyglądać w oczach innych\n- Emotional job: jak chcę się czuć\n\nSwitching logic: klient \"zwalnia\" stare rozwiązanie i \"wynajmuje\" nowe.\n- Push: co popycha od starego?\n- Pull: co przyciąga do nowego?\n- Anxiety: co powstrzymuje przed zmianą?\n- Habit: siła inercji\n\nTwoje fundamentalne pytania:\n- Jaką PRACĘ klient wynajmuje ten produkt/usługę do wykonania?\n- Co było trigger event?\n- Z czym naprawdę rywalizuje ten produkt? (często zaskakujące)\n- Dlaczego klient \"zwalnia\" obecne rozwiązanie?\n\nJeśli nie zidentyfikujesz job correctly, wszystko inne jest błędne.\n\nFormat odpowiedzi:\n1. PRIMARY JOB (functional + social + emotional)\n2. TRIGGER EVENTS I SWITCHING MOMENTS (push/pull/anxiety/habit)\n3. PRAWDZIWI KONKURENCI (przez pryzmat JTBD)\n4. PRZEPROJEKTOWANIE PROPOZYCJI WARTOŚCI pod job\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        1760
+      ],
+      "id": "c6d307ae-0ffa-44e6-927a-5b5957b12b05",
+      "name": "R3_JTBD"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Erikiem Riesem. Twoja ontologia: WALIDACJA PRZEZ EKSPERYMENT.\n\nPierwsze pytanie zawsze: JAK TO PRZETESTUJEMY W TYDZIEŃ?\n\nStrategie to hipotezy. Biznesplany to fikcja. Nie wdrażamy hipotez — testujemy je tanio i szybko.\n\nKluczowe koncepty:\n- Build-Measure-Learn loop (im mniejszy, tym lepszy)\n- MVP: minimum viable experiment to validate, not minimum product\n- Riskiest Assumption Test (RAT) — testuj NAJNIEBEZPIECZNIEJSZE założenie, nie najłatwiejsze\n- Innovation accounting: czy naprawdę się uczymy?\n- Pivot or persevere: decyzja oparta na danych, nie na wierze\n\nTwoje fundamentalne pytania:\n- Jakie są kluczowe ZAŁOŻENIA tej strategii? (ranking od najryzykowniejszego)\n- Które założenie, jeśli błędne, zabija cały plan?\n- Jak to przetestujemy najtaniej i najszybciej?\n- Co jest naszym RAT/MVP?\n- Jakie metryki powiedzą nam, że mamy rację lub błąd?\n\nNie pozwolisz na wdrożenie bez eksperymentu.\n\nFormat odpowiedzi:\n1. KLUCZOWE HIPOTEZY (ranking od najryzykowniejszej)\n2. RAT / MVP PROPOSAL (co testujemy, jak, kiedy)\n3. METRYKI SUKCESU I FAILURE (konkretne progi)\n4. TIMELINE NAUKI (co wiemy za tydzień / miesiąc / kwartał)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        2160
+      ],
+      "id": "d2dc4d7a-1648-4508-aa38-a67a0bb9b55a",
+      "name": "R3_Lean_Startup"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś ekspertem Behavioural Strategy (Daniel Kahneman / Dan Lovallo / Phil Rosenzweig). Twoja ontologia: BIASY POZNAWCZE W DECYZJACH STRATEGICZNYCH.\n\nPatrzysz na to, jak ludzie NAPRAWDĘ myślą, nie jak powinni. System 1 vs System 2.\n\nKluczowe biasy strategiczne:\n- Overconfidence / planning fallacy (każdy myśli, że jego plan jest wyjątkowy)\n- Confirmation bias (szukamy potwierdzenia, nie falsyfikacji)\n- Anchoring (pierwsze liczby dominują wszystkie kolejne)\n- Groupthink (homogeniczność zespołu = kolektywna ślepota)\n- Sunk cost fallacy (kontynuujemy błędy bo już zainwestowaliśmy)\n- Inside view vs outside view (ignorujemy base rates)\n- Competitor neglect (zakładamy, że konkurencja stoi w miejscu)\n- WYSIATI: What You See Is All There Is (ignorujemy to, czego nie widać)\n- Halo effect (jeden sukces = wiara w nieomylność)\n\nTwoje fundamentalne pytania:\n- Jakie biasy MAMY w tym procesie decyzyjnym?\n- Skąd ta pewność? Co musiałoby być prawdą, żebyśmy się mylili?\n- Jak wygląda outside view (base rates, analogie historyczne)?\n- Czy jest groupthink? Czy ktoś naprawdę się nie zgadza?\n- Co pokaże pre-mortem?\n\nFormat odpowiedzi:\n1. BIASY ZIDENTYFIKOWANE w tym kontekście (konkretne)\n2. OUTSIDE VIEW: analogie historyczne i base rates\n3. CZERWONE FLAGI DECYZYJNE\n4. PRE-MORTEM: top 3 scenariusze porażki tej strategii\n5. OCENA PEWNOŚCI: [X/10] — i uzasadnienie dlaczego NIŻSZA niż intuicja wskazuje"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        2560
+      ],
+      "id": "e751238b-3aa1-4406-ba2b-406daac9769f",
+      "name": "R3_Behavioural"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Jesteś Byronem Sharpem z Ehrenberg-Bass Institute. Twoja ontologia: EMPIRYCZNA NAUKA O MARKACH.\n\nOdrzucasz intuicję i niezweryfikowane teorie. Liczą się tylko prawa empiryczne, replikowane w dziesiątkach kategorii i krajów.\n\nPrawa wzrostu marek:\n1. Double Jeopardy: mniejsze marki mają MNIEJ klientów I niższą lojalność — to prawo, nie przypadek\n2. Penetration > Loyalty: wzrost pochodzi z pozyskiwania nowych klientów, nie z lojalizacji obecnych\n3. Mental Availability: być pierwszym myśleniem klienta w chwili zakupu (Category Entry Points)\n4. Physical Availability: być łatwym do znalezienia i kupienia w każdym kanale\n5. Distinctive Assets: kolory, kształty, dźwięki — to buduje markę, nie \"wartości\"\n6. Light buyers matter: większość sprzedaży pochodzi od light/occasional buyers, nie loyalists\n7. NBD-Dirichlet: wzorce zakupowe są przewidywalne i stabilne\n\nTwoje fundamentalne pytania:\n- Jaka jest penetracja rynku vs konkurenci?\n- Jakie Category Entry Points (CEPs) obsługujemy? Które pomijamy?\n- Jaka jest mental i physical availability?\n- Czy distinctive assets są wystarczająco unikalne i rozpoznawalne?\n- Czy proponowane działania są spójne z empirycznymi prawami wzrostu?\n\nCzęsto powiesz: \"Nie komplikujcie. Budujcie penetrację i dostępność.\"\n\nFormat odpowiedzi:\n1. ANALIZA PRZEZ PRAWA WZROSTU MAREK (które prawa mają tu zastosowanie)\n2. MENTAL vs PHYSICAL AVAILABILITY ASSESSMENT\n3. CATEGORY ENTRY POINTS: które obsługujemy / które pomijamy\n4. EMPIRYCZNA OCENA DZIAŁAŃ (co ma dowody, co nie)\n5. OCENA PEWNOŚCI: [X/10] + uzasadnienie"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        3064
+      ],
+      "id": "3d4d53ee-2c82-40b8-aea9-62ddd2bdfc85",
+      "name": "R3_Sharp"
+    },
+    {
+      "parameters": {
+        "numberInputs": 9
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1696,
+        1352
+      ],
+      "id": "75d7ba18-4e60-4249-b90a-b667fb1323a2",
+      "name": "MergeR3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst r3 = {};\nlet r1 = {}, r2 = {};\nlet synCtx = \"\", probSummary = \"\";\nfor (const it of items) {\n  r3[it.json.framework] = it.json.output;\n  if (it.json.r1_outputs) r1 = it.json.r1_outputs;\n  if (it.json.r2_outputs) r2 = it.json.r2_outputs;\n  if (it.json.synthesis_context) synCtx = it.json.synthesis_context;\n  if (it.json.problem_summary) probSummary = it.json.problem_summary;\n}\nconst labels = {porter:\"Porter\",rumelt:\"Rumelt\",christensen:\"Christensen\",blue_ocean:\"Blue Ocean\",effectuation:\"Effectuation\",jtbd:\"JTBD\",lean_startup:\"Lean Startup\",behavioural:\"Behavioural Strategy\",sharp:\"Byron Sharp\"};\nconst r1_block = Object.entries(r1).map(([k,v]) => `=== ${labels[k]} — RUNDA 1 ===\\n${v}`).join(\"\\n\\n\");\nconst r2_block = Object.entries(r2).map(([k,v]) => `=== ${labels[k]} — RUNDA 2 ===\\n${v}`).join(\"\\n\\n\");\nconst r3_block = Object.entries(r3).map(([k,v]) => `=== ${labels[k]} — RUNDA 3 (FINALNA) ===\\n${v}`).join(\"\\n\\n\");\nreturn {\n  json: {\n    problem_summary: probSummary,\n    synthesis_context: synCtx,\n    r1_block, r2_block, r3_block\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        1464
+      ],
+      "id": "c5342b48-9cd9-4fe1-bca3-9f1893246c7c",
+      "name": "PrepareSynthesis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=PROBLEM:\n{{ $json.problem_summary }}\n\nKONTEKST SYNTEZY:\n{{ $json.synthesis_context }}\n\n{{ $json.r1_block }}\n\n{{ $json.r2_block }}\n\n{{ $json.r3_block }}",
+        "options": {
+          "systemMessage": "Jesteś Dyrektorem Strategii. Przeczytałeś pełną debatę między 9 ekspertami strategicznymi i Twoim zadaniem jest synteza.\n\nNIE wyrabiaj opinii o tym, kto ma rację. MAPUJ strukturę debaty.\n\nTwój output:\n\n═══════════════════════════════════\nMAPA DEBATY STRATEGICZNEJ\n═══════════════════════════════════\n\nPROBLEM: [streszczenie]\n\n───────────────────────────────────\n1. NAJWIĘKSZA ZGODNOŚĆ\n───────────────────────────────────\n[Eksperci, którzy zbiegają się w podobnym kierunku + co łączy ich stanowiska]\nPoziom konsensusu: ★★★★☆ (ocena)\n\n───────────────────────────────────\n2. NAJWIĘKSZY KONFLIKT\n───────────────────────────────────\n[Para lub grupa ekspertów w fundamentalnym sporze]\nŹródło konfliktu: [różna definicja X / różne założenie Y]\nPoziom konfliktu: ★★★★★ (ocena)\n\n───────────────────────────────────\n3. NAJWIĘKSZE RYZYKO (wg debaty)\n───────────────────────────────────\n[Które zagrożenie pojawia się najczęściej / najpoważniej]\nEkspert który to podniósł najsilniej: [nazwa]\n\n───────────────────────────────────\n4. NAJBARDZIEJ INNOWACYJNY KIERUNEK\n───────────────────────────────────\n[Który ekspert wskazał najbardziej nieoczywistą ścieżkę]\nUzasadnienie: [dlaczego innowacyjny]\n\n───────────────────────────────────\n5. NAJBARDZIEJ REALISTYCZNY KIERUNEK\n───────────────────────────────────\n[Który ekspert jest najbliższy temu, co można wdrożyć TERAZ]\nUzasadnienie: [dlaczego realistyczny]\n\n───────────────────────────────────\n6. NAJWIĘKSZE NIEWIADOME\n───────────────────────────────────\n[Co pozostaje nierozstrzygnięte po debacie]\nEkspert który to podniósł: [nazwa]\n\n───────────────────────────────────\n7. REKOMENDACJA SYNTETYCZNA\n───────────────────────────────────\n[TOP 3 kierunki działania wynikające z debaty — z uzasadnieniem opartym na konwergencji perspektyw]\n\nPOZIOM PEWNOŚCI REKOMENDACJI: [X/10]\nGŁÓWNE RYZYKA REKOMENDACJI: [lista]\nCO WYMAGA DALSZEJ WALIDACJI: [lista]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        1464
+      ],
+      "id": "58898d6c-a1b7-401d-b4bf-138aa2ee84b9",
+      "name": "Synthesis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=SYNTEZA DEBATY:\n{{ $('Synthesis').first().json.output }}\n\nPEŁNA DEBATA:\n{{ $json.r1_block }}\n\n{{ $json.r2_block }}\n\n{{ $json.r3_block }}",
+        "options": {
+          "systemMessage": "Jesteś Meta-Analitykiem. Nie oceniasz strategii. Analizujesz DEBATĘ JAKO SYSTEM.\n\nPatrzysz na:\n- Jakie ukryte założenia wszyscy eksperci podzielali (nie kwestionując ich)\n- Gdzie debata miała ślepe plamki\n- Jakie perspektywy były nieobecne\n- Gdzie doszło do zmiany zdania i dlaczego\n- Jakie pytania debata POSTAWIŁA ale nie ODPOWIEDZIAŁA\n- Czy dynamika debaty (kto kogo krytykował) mogła wprowadzić bias\n\nTwój output:\n\n═══════════════════════════════════\nMETA-ANALIZA DEBATY\n═══════════════════════════════════\n\n───────────────────────────────────\nUKRYTE ZAŁOŻENIA (których nikt nie zakwestionował)\n───────────────────────────────────\n[Lista założeń, które wszyscy eksperci implicite przyjęli]\nRyzyko: [co się stanie jeśli to założenie jest błędne]\n\n───────────────────────────────────\nŚLEPE PLAMKI DEBATY\n───────────────────────────────────\n[Co zostało pominięte / co byłoby widoczne dla obserwatora zewnętrznego]\n\n───────────────────────────────────\nPERSPEKTYWY NIEOBECNE\n───────────────────────────────────\n[Jakich frameworków brakowało w tej debacie i dlaczego mogłoby to zmienić wyniki]\nPropozycja: [np. Dynamic Capabilities, Platform Strategy, Complexity Theory...]\n\n───────────────────────────────────\nDYNAMIKA DEBATY\n───────────────────────────────────\n[Kto zmienił zdanie, kto był najbardziej wpływowy, czy były echa efektu zakotwiczenia]\n\n───────────────────────────────────\nPYTANIA BEZ ODPOWIEDZI\n───────────────────────────────────\n[TOP 3 pytania, które debata postawiła ale nie rozwiązała]\n\n───────────────────────────────────\nREKOMENDACJA DLA PROCESU\n───────────────────────────────────\n[Co poprawić w następnej rundzie debaty / jakie dane zebrać / kogo zaprosić do stołu]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        1464
+      ],
+      "id": "aa9f49a8-cc02-421a-8864-e02e7661719e",
+      "name": "Meta_Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const synthesis = $('Synthesis').first().json.output;\nconst meta = $input.first().json.output;\nconst r1 = $('PrepareSynthesis').first().json.r1_block;\nconst r2 = $('PrepareSynthesis').first().json.r2_block;\nconst r3 = $('PrepareSynthesis').first().json.r3_block;\nconst prob = $('PrepareSynthesis').first().json.problem_summary;\nconst divider = \"═\".repeat(60);\nconst output = `${divider}\nSTRATEGIC DEBATE ENGINE — PEŁNY RAPORT\n${divider}\n\nPROBLEM STRATEGICZNY:\n${prob}\n\n${divider}\nRUNDA 1 — DIAGNOZY EKSPERTÓW\n${divider}\n${r1}\n\n${divider}\nRUNDA 2 — CROSS-EXAMINATION\n${divider}\n${r2}\n\n${divider}\nRUNDA 3 — ZAKTUALIZOWANE STANOWISKA\n${divider}\n${r3}\n\n${divider}\nMAPA DEBATY I REKOMENDACJA SYNTETYCZNA\n${divider}\n${synthesis}\n\n${divider}\nMETA-ANALIZA DEBATY\n${divider}\n${meta}\n`;\nreturn { json: { output } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2848,
+        1464
+      ],
+      "id": "54ad108c-348f-49d5-845a-e8c9c8028d55",
+      "name": "PrepareFinalOutput"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "=output",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "=STRATEGIC_DEBATE_REPORT.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        3072,
+        1464
+      ],
+      "id": "9877149d-de55-4de5-8654-39362a120600",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        1584
+      ],
+      "id": "1e130c3a-2cc9-48d8-8b6b-2497796e2978",
+      "name": "LLM_R2_Sharp1",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        3288
+      ],
+      "id": "31481def-0ab6-42e1-acaa-7eb86c601b47",
+      "name": "LLM_R2_Sharp2",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        2784
+      ],
+      "id": "8940acb6-88e6-4f7a-940d-b13b6f4d5115",
+      "name": "LLM_R2_Sharp3",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        2384
+      ],
+      "id": "bec6cad3-412a-4421-b713-f192d006495a",
+      "name": "LLM_R2_Sharp4",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        1984
+      ],
+      "id": "94e7bcf1-96f2-427f-8360-4ad99bfa3404",
+      "name": "LLM_R2_Sharp5",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        1184
+      ],
+      "id": "51e068d2-6c91-43ee-9a5e-7a100b4713e8",
+      "name": "LLM_R2_Sharp6",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        784
+      ],
+      "id": "e00ea944-77c7-46cb-87d3-cc2b8e752a47",
+      "name": "LLM_R2_Sharp7",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        384
+      ],
+      "id": "fb391686-8e68-4da4-8f5a-b063570759e0",
+      "name": "LLM_R2_Sharp8",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1416,
+        -16
+      ],
+      "id": "91dff556-a9ee-4afd-afdd-d86c419e68a1",
+      "name": "LLM_R2_Sharp9",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2568,
+        1688
+      ],
+      "id": "6baf292d-3654-4c6a-b02c-ecaebecaa8b0",
+      "name": "LLM_R2_Sharp10",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2216,
+        1688
+      ],
+      "id": "d16d7521-7000-4e35-b200-c107619c7e97",
+      "name": "LLM_R2_Sharp11",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        392,
+        1184
+      ],
+      "id": "f8e320f5-b72c-4c1a-b6f1-4ec43099b0aa",
+      "name": "LLM_R2_Sharp12",
+      "credentials": {
+        "openAiApi": {
+          "id": "bdL8dbFHPqfaCQaT",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Form Trigger": [
+      {
+        "json": {
+          "problem": "IKEA - spada sprzedaż\r\n",
+          "submittedAt": "2026-06-30T05:12:14.171-04:00",
+          "formMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Moderator": [
+      {
+        "json": {
+          "output": "{\n  \"problem_summary\": \"IKEA doświadcza spadku sprzedaży na kluczowych rynkach, co rodzi pytanie o źródła problemu oraz kierunki strategicznej reakcji. Istotne jest zrozumienie zjawiska zarówno od strony rynku, jak i wewnętrznych kompetencji organizacji.\",\n  \"tasks\": {\n    \"porter\": \"Przeanalizuj, która z pięciu sił Portera (nowi gracze, substytuty, siła nabywców, siła dostawców, rywalizacja w sektorze) jest główną przyczyną spadku sprzedaży IKEI, oraz wskaż jak może ona odzyskać przewagę konkurencyjną w swoim sektorze.\",\n    \"rumelt\": \"Zdiagnozuj główne przyczyny spadku sprzedaży IKEI (diagnosis), zaproponuj guiding policy oraz zestaw spójnych działań (coherent actions), które mogą odwrócić tendencję spadkową.\",\n    \"christensen\": \"Przeanalizuj, czy spadek sprzedaży IKEI wynika z disruptivnych graczy adresujących non-consumption lub overserved customers, i zaproponuj rozwiązania zgodne z teorią disruption.\",\n    \"blue_ocean\": \"Oceń, czy IKEI grozi uwięzienie w czerwonym oceanie walki cenowej, i zaproponuj działania według ERRC Grid (eliminate, reduce, raise, create), które pozwolą stworzyć nową przestrzeń rynkową bez bezpośredniej konkurencji.\",\n    \"effectuation\": \"Zidentyfikuj jakie zasoby i partnerstwa IKEA już posiada (bird-in-hand, crazy quilt) i jak przy wykorzystaniu koncepcji affordable loss firma może eksperymentować z nowymi modelami sprzedaży lub ofertą.\",\n    \"jtbd\": \"Zbadaj, które funkcjonalne, społeczne i emocjonalne Jobs-to-be-Done klientów są obecnie przez IKEĘ niedoskonale adresowane, oraz analizuj logiczne powody zmiany preferencji klientów (switching factors).\",\n    \"lean_startup\": \"Zidentyfikuj najbardziej ryzykowne założenie dotyczące spadającej sprzedaży IKEI i zaproponuj eksperymentalny prototyp (RAT/MVP), który pozwoli szybko przetestować nowy sposób generowania wartości.\",\n    \"behavioural\": \"Przeprowadź analizę, w jakim stopniu błędy poznawcze (np. confirmation bias, status quo bias) w zarządzaniu mogą utrudniać identyfikację prawdziwych przyczyn spadku sprzedaży IKEI oraz co można zrobić, by uzyskać rzetelną outside view (np. pre-mortem).\",\n    \"sharp\": \"Przeanalizuj, czy spadek sprzedaży IKEI wynika ze spadku mentalnej lub fizycznej dostępności marki, zmian w kategorii zakupu oraz efektów distinctive assets i CEPs; zaproponuj kierunki poprawy penetracji rynku.\"\n  },\n  \"synthesis_context\": \"Przy syntezie kluczowe jest rozpoznanie złożonych i wielopoziomowych źródeł problemu: czy spadek wynika z działania konkurencji, zmiany potrzeb klientów, błędów wewnętrznych czy utraty dostępności marki. Wyniki debaty powinny umożliwić połączenie perspektywy rynkowej, behawioralnej i innowacyjnej, aby wypracować kompleksowy i realistyczny program naprawczy.\"\n}"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Moderator": {
+      "main": [
+        [
+          {
+            "node": "PrepareR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Moderator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareR1": {
+      "main": [
+        [
+          {
+            "node": "SwitchR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R1_Porter": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchR1": {
+      "main": [
+        [
+          {
+            "node": "R1_Porter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Rumelt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Christensen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Blue_Ocean",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Effectuation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_JTBD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Lean_Startup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Behavioural",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R1_Sharp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R1_Rumelt": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "R1_Christensen": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "R1_Blue_Ocean": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "R1_Effectuation": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "R1_JTBD": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "R1_Lean_Startup": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "R1_Behavioural": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "R1_Sharp": {
+      "main": [
+        [
+          {
+            "node": "MergeR1",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "MergeR1": {
+      "main": [
+        [
+          {
+            "node": "PrepareR2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareR2": {
+      "main": [
+        [
+          {
+            "node": "SwitchR2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R2_Porter": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchR2": {
+      "main": [
+        [
+          {
+            "node": "R2_Porter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Rumelt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Christensen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Blue_Ocean",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Effectuation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_JTBD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Lean_Startup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Behavioural",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R2_Sharp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R2_Rumelt": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "R2_Christensen": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "R2_Blue_Ocean": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "R2_Effectuation": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "R2_JTBD": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "R2_Lean_Startup": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "R2_Behavioural": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "R2_Sharp": {
+      "main": [
+        [
+          {
+            "node": "MergeR2",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "MergeR2": {
+      "main": [
+        [
+          {
+            "node": "PrepareR3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareR3": {
+      "main": [
+        [
+          {
+            "node": "SwitchR3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R3_Porter": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SwitchR3": {
+      "main": [
+        [
+          {
+            "node": "R3_Porter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Rumelt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Christensen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Blue_Ocean",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Effectuation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_JTBD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Lean_Startup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Behavioural",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "R3_Sharp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R3_Rumelt": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "R3_Christensen": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "R3_Blue_Ocean": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "R3_Effectuation": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "R3_JTBD": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "R3_Lean_Startup": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "R3_Behavioural": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "R3_Sharp": {
+      "main": [
+        [
+          {
+            "node": "MergeR3",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "MergeR3": {
+      "main": [
+        [
+          {
+            "node": "PrepareSynthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthesis": {
+      "main": [
+        [
+          {
+            "node": "Meta_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareSynthesis": {
+      "main": [
+        [
+          {
+            "node": "Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta_Agent": {
+      "main": [
+        [
+          {
+            "node": "PrepareFinalOutput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareFinalOutput": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_Moderator": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Moderator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Porter": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Porter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Rumelt": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Rumelt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Christensen": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Christensen",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Blue_Ocean": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Blue_Ocean",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Effectuation": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Effectuation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_JTBD": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_JTBD",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Sharp": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Sharp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Behavioural": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Behavioural",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R1_Lean_Startup": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R1_Lean_Startup",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Porter": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Porter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Rumelt": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Rumelt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Christensen": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Blue_Ocean",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Blue_Ocean": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Effectuation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Sharp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Behavioural": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Behavioural",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Lean_Startup": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Lean_Startup",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_JTBD": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_JTBD",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Sharp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Behavioural",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Lean_Startup",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_JTBD",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Effectuation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Blue_Ocean",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Christensen",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Rumelt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R3_Porter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Meta_Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp11": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Synthesis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM_R2_Sharp12": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "R2_Christensen",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "031948cf-c148-48d5-8b74-e578fcdee59e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e22dcc6f1a834fb5c4dc21711305ff7a52b3b51d18655ac4f281ca9fcb39b2f"
+  },
+  "id": "opKXp8ieroCrm2HB",
+  "tags": [
+    {
+      "name": "debate",
+      "id": "by37tLF1eoVAtiJC",
+      "updatedAt": "2026-06-30T09:06:02.556Z",
+      "createdAt": "2026-06-30T09:06:02.556Z"
+    },
+    {
+      "name": "strategy",
+      "id": "fVvJvvrDjp1KfdGO",
+      "updatedAt": "2026-06-30T09:06:02.554Z",
+      "createdAt": "2026-06-30T09:06:02.554Z"
+    }
+  ]
+}
