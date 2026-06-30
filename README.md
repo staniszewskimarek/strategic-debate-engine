@@ -1,6 +1,7 @@
 # Strategic Debate Engine
 
 Silnik n8n, w którym 9 frameworków strategicznych debatuje ze sobą nad zadanym problemem biznesowym, zamiast generować jedną, fałszywie pewną rekomendację.
+<img width="777" height="626" alt="image" src="https://github.com/user-attachments/assets/af8ece11-10f5-4322-870c-c0d47bb08fac" />
 
 ## Problem
 
